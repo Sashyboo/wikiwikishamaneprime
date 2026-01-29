@@ -28,14 +28,16 @@
             display: flex; 
             justify-content: center;
             align-items: center;     
+            /* RETOUR A L'ORIGINAL : Le background est directement sur le body */
             background: linear-gradient(-45deg, #ff9a9e, #fad0c4, #fad0c4, #fbc2eb);
             background-size: 400% 400%;
             animation: gradientBG 15s ease infinite;
+            
             font-family: 'Montserrat', sans-serif;
             color: var(--text-color);
             padding: 20px;
             box-sizing: border-box;
-            overflow: hidden;
+            overflow: hidden; /* Empêche le scroll global */
             position: relative;
         }
 
@@ -46,19 +48,29 @@
         }
 
         /* --- CŒURS EN ARRIÈRE PLAN --- */
+        #hearts-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            pointer-events: none;
+            z-index: -1;
+        }
+
         .bg-heart {
             position: absolute;
             top: -10%;
-            /* MODIFICATION : Blanc plus opaque + Ombre portée pour le contraste */
+            /* On garde ton réglage "explicite" (bien visible) */
             color: rgba(255, 255, 255, 0.9);
             text-shadow: 0 2px 10px rgba(214, 51, 132, 0.2); 
             animation: floatHeart linear infinite;
-            z-index: -1; 
         }
 
         @keyframes floatHeart {
             0% { transform: translateY(0) rotate(0deg); opacity: 0; }
-            10% { opacity: 0.9; } /* On monte à 0.9 au lieu de 0.5 */
+            10% { opacity: 0.9; }
             90% { opacity: 0.9; }
             100% { transform: translateY(110vh) rotate(360deg); opacity: 0; }
         }
@@ -94,10 +106,10 @@
             text-align: center;
             border-bottom: 1px solid rgba(232, 67, 147, 0.1);
             flex-shrink: 0;
-            position: relative; /* Pour positionner le bouton retour */
+            position: relative;
         }
 
-        /* Nouveau bouton retour */
+        /* Bouton retour */
         .btn-back {
             position: absolute;
             left: 15px;
@@ -252,7 +264,6 @@
 
         /* --- BOUTONS --- */
         
-        /* Animation de pulsation pour le bouton principal */
         @keyframes pulse-glow {
             0% { box-shadow: 0 0 0 0 rgba(232, 67, 147, 0.4); }
             70% { box-shadow: 0 0 0 15px rgba(232, 67, 147, 0); }
@@ -266,7 +277,6 @@
             border: none;
             border-radius: 50px;
             
-            /* Retour à la police standard mais stylisée */
             font-family: 'Montserrat', sans-serif; 
             font-size: 1.1em;
             font-weight: 600;
@@ -280,12 +290,8 @@
             width: auto;
             min-width: 220px;
             box-shadow: 0 5px 20px rgba(214, 51, 132, 0.3);
-            
-            /* Style "Chic" */
             text-transform: uppercase; 
             letter-spacing: 2px;
-            
-            /* Animation */
             animation: pulse-glow 2s infinite;
         }
 
@@ -379,7 +385,6 @@
             min-width: 0; 
             padding: 12px;
             font-size: 0.9em;
-            /* On remet la police normale pour les boutons de la modale pour la lisibilité */
             font-family: 'Montserrat', sans-serif; 
             text-transform: uppercase;
         }
