@@ -10,7 +10,7 @@
     <!-- LIBRAIRIE EMAILJS -->
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
 
-  <style>
+    <style>
         /* --- CONFIGURATION --- */
         :root {
             --primary-color: #d63384; 
@@ -46,18 +46,29 @@
         }
 
         /* --- CŒURS EN ARRIÈRE PLAN --- */
+        #hearts-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            pointer-events: none;
+            z-index: -1;
+        }
+
         .bg-heart {
             position: absolute;
             top: -10%;
-            color: rgba(255, 255, 255, 0.3);
+            color: rgba(255, 255, 255, 0.9);
+            text-shadow: 0 2px 10px rgba(214, 51, 132, 0.2); 
             animation: floatHeart linear infinite;
-            z-index: -1; 
         }
 
         @keyframes floatHeart {
             0% { transform: translateY(0) rotate(0deg); opacity: 0; }
-            10% { opacity: 0.5; }
-            90% { opacity: 0.5; }
+            10% { opacity: 0.9; }
+            90% { opacity: 0.9; }
             100% { transform: translateY(110vh) rotate(360deg); opacity: 0; }
         }
 
@@ -92,10 +103,10 @@
             text-align: center;
             border-bottom: 1px solid rgba(232, 67, 147, 0.1);
             flex-shrink: 0;
-            position: relative; /* Pour positionner le bouton retour */
+            position: relative;
         }
 
-        /* Nouveau bouton retour */
+        /* Bouton retour */
         .btn-back {
             position: absolute;
             left: 15px;
@@ -377,7 +388,6 @@
             min-width: 0; 
             padding: 12px;
             font-size: 0.9em;
-            /* On remet la police normale pour les boutons de la modale pour la lisibilité */
             font-family: 'Montserrat', sans-serif; 
             text-transform: uppercase;
         }
@@ -387,6 +397,50 @@
         /* Spinner */
         .fa-spinner { animation: spin 1s linear infinite; }
         @keyframes spin { 100% { transform: rotate(360deg); } }
+
+        /* --- EASTER EGG (Le cœur caché) --- */
+        #easter-egg-screen {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.95); /* Fond très sombre */
+            z-index: 200; /* Au-dessus de tout */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            cursor: pointer; /* Indique qu'on peut cliquer */
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.5s ease;
+            padding: 20px; /* Marge interne pour mobile */
+            box-sizing: border-box;
+        }
+
+        #easter-egg-screen.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+        
+        /* Conteneur pour le texte de l'easter egg */
+        .easter-content {
+            text-align: center;
+            max-width: 600px;
+            width: 100%;
+            animation: floatUp 1s ease-out;
+        }
+        
+        @keyframes floatUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes intense-heartbeat {
+            0% { transform: scale(1); filter: drop-shadow(0 0 0 rgba(255, 71, 87, 0)); }
+            14% { transform: scale(1.3); filter: drop-shadow(0 0 30px rgba(255, 71, 87, 0.5)); }
+            28% { transform: scale(1); filter: drop-shadow(0 0 0 rgba(255, 71, 87, 0)); }
+            42% { transform: scale(1.3); filter: drop-shadow(0 0 30px rgba(255, 71, 87, 0.5)); }
+            70% { transform: scale(1); filter: drop-shadow(0 0 0 rgba(255, 71, 87, 0)); }
+        }
 
     </style>
 </head>
@@ -400,7 +454,8 @@
         
         <!-- ÉCRAN 1 : ACCUEIL -->
         <div id="intro-screen">
-            <div style="font-size: 5em; margin-bottom: 20px; filter: drop-shadow(0 5px 15px rgba(232, 67, 147, 0.2)); animation: heartbeat 2s infinite;">
+            <!-- Ajout d'un ID "heart-trigger" et du curseur pour l'interaction -->
+            <div id="heart-trigger" style="font-size: 5em; margin-bottom: 20px; filter: drop-shadow(0 5px 15px rgba(232, 67, 147, 0.2)); animation: heartbeat 2s infinite; cursor: pointer;">
                 <i class="fas fa-heart" style="color: var(--primary-color);"></i>
             </div>
             <h1 class="romantic-title">Pour ma Valentine,<br>Romane.</h1>
@@ -422,12 +477,30 @@
                 </button>
 
                 <h2 class="romantic-title" style="font-size: 2.2em;">Tes Cadeaux</h2>
-                <div class="subtitle">Choisis celui que tu veux utiliser ! Fais gaffe, une seule fois par cadeaux :p</div>
+                <div class="subtitle">Choisis celui que tu veux utiliser. C'est une seule utilisation, gratte pas trop :p</div>
             </div>
 
             <div id="coupons-container" class="coupon-list"></div>
         </div>
 
+    </div>
+
+    <!-- ÉCRAN EASTER EGG (Caché par défaut) -->
+    <div id="easter-egg-screen">
+        <div class="easter-content">
+            <div style="font-size: 8em; color: #ff4757; animation: intense-heartbeat 1.5s infinite; margin-bottom: 30px;">
+                <i class="fas fa-heart"></i>
+            </div>
+            <h2 style="color: white; font-family: 'Great Vibes', cursive; font-size: 3.5em; margin: 0; text-shadow: 0 0 10px rgba(255,255,255,0.3);">
+                Mon cœur bat pour toi...
+            </h2>
+            <div style="color: #dfe6e9; font-family: 'Montserrat', sans-serif; font-size: 1.1em; line-height: 1.8; margin-top: 25px; text-align: justify; text-align-last: center;">
+                Déjà un an depuis notre premier date. C'était un peu improvisé, c'est vrai. Mais je ne regrette rien, je suis content de ne pas être resté jouer chez moi. Je t'aime tellement maintenant, je suis content d'avoir fait le beau parleur et d'avoir tout fait pour toi. Je continuerai jusqu'au dernier jour de ma vie, pour tes beaux yeux.
+            </div>
+            <p style="color: #636e72; font-size: 0.8em; margin-top: 40px; font-style: italic;">
+                (Clique n'importe où pour faire demi-tour, je t'aime.)
+            </p>
+        </div>
     </div>
 
     <!-- MODALE DE CONFIRMATION -->
@@ -439,7 +512,7 @@
                 Tu es sur le point d'utiliser ce bon.
             </p>
             <p id="modal-info" style="font-size: 0.85em; color: var(--primary-color); background: #fff0f6; padding: 10px; border-radius: 10px; margin-top: 15px;">
-                <i class="fas fa-magic"></i> &nbsp;Confirmation auto envoyée à ton copain d'amoureux d'amour ! (pas de fraude héhé)
+                <i class="fas fa-magic"></i> &nbsp;Ca enverra une confirmation auto à ton copain d'amour amoureux blblbl! :D
             </p>
             <div class="modal-actions">
                 <button id="btn-cancel" class="btn-secondary">Annuler</button>
@@ -489,7 +562,7 @@
         ];
 
         // Changement de version pour forcer le nouvel ordre
-        const STORAGE_KEY = 'carnet_bons'; 
+        const STORAGE_KEY = 'carnet_bons_v6'; 
         let currentCouponId = null;
         let coupons = [];
 
@@ -600,6 +673,22 @@
 
         // --- NAVIGATION ---
         
+        // Logique de l'Easter Egg
+        const heartTrigger = document.getElementById('heart-trigger');
+        const easterEggScreen = document.getElementById('easter-egg-screen');
+
+        if(heartTrigger) {
+            heartTrigger.addEventListener('click', () => {
+                easterEggScreen.classList.add('active');
+            });
+        }
+
+        if(easterEggScreen) {
+            easterEggScreen.addEventListener('click', () => {
+                easterEggScreen.classList.remove('active');
+            });
+        }
+
         // Aller à la liste
         document.getElementById('btn-start').addEventListener('click', () => {
             document.getElementById('intro-screen').classList.add('hidden');
