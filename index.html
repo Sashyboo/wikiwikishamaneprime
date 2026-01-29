@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tes Surprises de Saint-Valentin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&family=Great+Vibes&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- LIBRAIRIE POUR L'ENVOI D'EMAIL -->
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+
+    <style>
+        /* --- CONFIGURATION --- */
+        :root {
+            --primary-color: #e84393;
+            --secondary-color: #6c5ce7;
+            --bg-gradient-start: #ff9a9e;
+            --bg-gradient-end: #fecfef;
+            --text-color: #2d3436;
+            --white: #ffffff;
+            --overlay-bg: rgba(0, 0, 0, 0.6);
+            --success-color: #00b894;
+        }
+
+        body {
+            margin: 0;
+            height: 100vh; /* Force la hauteur de l'écran */
+            display: flex; 
+            justify-content: center;
+            align-items: center;     
+            background: linear-gradient(135deg, var(--bg-gradient-start), var(--bg-gradient-end));
+            font-family: 'Montserrat', sans-serif;
+            color: var(--text-color);
+            padding: 20px;
+            box-sizing: border-box;
+            overflow: hidden; /* Évite le double scroll sur mobile */
+        }
+
+        /* --- LA CARTE PRINCIPALE --- */
+        .container {
+            background: var(--white);
+            width: 100%;
+            max-width: 450px;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            /* On limite la hauteur pour forcer le scroll interne */
+            max-height: 85vh; 
+            animation: slideUp 0.8s ease-out;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        /* --- HEADER --- */
+        .header {
+            background-color: #fff0f6;
+            padding: 30px 20px;
+            text-align: center;
+            border-bottom: 2px dashed var(--primary-color);
+            flex-shrink: 0; /* Empêche le header de s'écraser */
+        }
+
+        .romantic-title {
+            font-family: 'Great Vibes', cursive;
+            color: var(--primary-color);
+            font-size: 2.8em;
+            margin: 0;
+            line-height: 1.2;
+        }
+
+        .subtitle {
+            margin-top: 10px;
+            font-size: 0.9em;
+            color: #636e72;
+        }
+
+        /* --- LISTE DES BONS (SCROLLABLE) --- */
+        .coupon-list {
+            padding: 20px;
+            overflow-y: auto; /* Active le scroll vertical */
+            /* La magie Flexbox pour le scroll : */
+            flex: 1; 
+            min-height: 0; /* CRUCIAL : autorise le rétrécissement pour activer le scroll */
+        }
+
+        /* --- UN COUPON --- */
+        .coupon-card {
+            background: white;
+            border: 1px solid #dfe6e9;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            transition: transform 0.2s, box-shadow 0.2s;
+            position: relative;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+
+        .coupon-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        }
+
+        .coupon-card.used {
+            background-color: #f1f2f6;
+            border-color: #b2bec3;
+            opacity: 0.8;
+            pointer-events: none;
+        }
+
+        .coupon-icon {
+            width: 50px;
+            height: 50px;
+            background-color: #fff0f6;
+            color: var(--primary-color);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2em;
+            flex-shrink: 0;
+        }
+
+        .coupon-card.used .coupon-icon {
+            background-color: #b2bec3;
+            color: white;
+        }
+
+        .coupon-details {
+            flex-grow: 1;
+        }
+
+        .coupon-title {
+            font-weight: 600;
+            margin-bottom: 4px;
+            display: block;
+        }
+
+        .coupon-desc {
+            font-size: 0.8em;
+            color: #636e72;
+        }
+
+        .coupon-action {
+            color: var(--primary-color);
+            cursor: pointer;
+            padding: 10px;
+            border-radius: 50%;
+            transition: background 0.2s;
+        }
+
+        .coupon-action:hover {
+            background-color: #fff0f6;
+        }
+
+        .status-badge {
+            font-size: 0.7em;
+            background: var(--success-color);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 10px;
+            display: inline-block;
+            margin-top: 5px;
+        }
+
+        /* --- ÉCRAN D'INTRO --- */
+        #intro-screen {
+            padding: 40px;
+            text-align: center;
+            background: white;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        /* --- BOUTONS --- */
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 50px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            justify-content: center;
+            width: 100%;
+        }
+        
+        .btn-primary:disabled {
+            background-color: #b2bec3;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        .btn-secondary {
+            background: transparent;
+            border: 2px solid #b2bec3;
+            color: #636e72;
+            padding: 10px 20px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        /* --- MODALE --- */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--overlay-bg);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+            backdrop-filter: blur(3px);
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .modal-box {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            width: 85%;
+            max-width: 320px;
+            text-align: center;
+            transform: scale(0.9);
+            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .modal-overlay.active .modal-box {
+            transform: scale(1);
+        }
+        
+        .modal-icon {
+            font-size: 3em;
+            color: var(--primary-color);
+            margin-bottom: 15px;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 25px;
+        }
+        
+        .modal-actions button {
+            flex: 1;
+        }
+
+        .hidden { display: none !important; }
+        
+        /* Spinner pour le chargement */
+        .fa-spinner {
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+
+    </style>
+</head>
+<body>
+
+    <!-- CONTENEUR PRINCIPAL -->
+    <div class="container">
+        
+        <!-- ÉCRAN 1 : ACCUEIL -->
+        <div id="intro-screen">
+            <i class="fas fa-heart" style="font-size: 4em; color: var(--primary-color); margin-bottom: 20px; animation: heartbeat 1.5s infinite;"></i>
+            <h1 class="romantic-title">Pour ma Valentine, Romane.</h1>
+            <p style="color: #636e72; line-height: 1.6;">
+                Je manque un peu d'originalité, mais l'idée est très bonne, alors je la vole, mais à ma sauce ! <br>
+                J'espère que tu seras pas déçue :p
+            </p>
+            <button id="btn-start" class="btn-primary" style="margin-top: 30px;">
+                Tes cadeaux <i class="fas fa-arrow-right"></i>
+            </button>
+        </div>
+
+        <!-- ÉCRAN 2 : LISTE DES BONS -->
+        <!-- flex: 1 et min-height: 0 sont essentiels ici pour le scroll -->
+        <div id="list-screen" class="hidden" style="flex: 1; min-height: 0; display: flex; flex-direction: column;">
+            <div class="header">
+                <h2 class="romantic-title" style="font-size: 2em;">Tes Cadeaux</h2>
+                <div class="subtitle">Choisis celui que tu veux utiliser!
+                    Fais gaffe, t'as le droit qu'à un seul bon.
+                </div>
+            </div>
+
+            <div id="coupons-container" class="coupon-list"></div>
+        </div>
+
+    </div>
+
+    <!-- MODALE DE CONFIRMATION -->
+    <div id="modal" class="modal-overlay">
+        <div class="modal-box">
+            <div class="modal-icon"><i class="fas fa-envelope-open-text"></i></div>
+            <h3 id="modal-title" style="margin-top: 0; color: #2d3436;">On valide ?</h3>
+            <p id="modal-text" style="font-size: 0.9em; color: #636e72;">Tu es sur le point d'utiliser ce bon.</p>
+            <p id="modal-info" style="font-size: 0.8em; color: var(--primary-color); font-style: italic;">
+                <i class="fas fa-magic"></i> Cela enverra automatiquement la confirmation à ton copain. (Tu pourras pas frauder haha)
+            </p>
+            <div class="modal-actions">
+                <button id="btn-cancel" class="btn-secondary">Annuler</button>
+                <button id="btn-confirm" class="btn-primary">Valider !</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- 1. CONFIGURATION EMAILJS ---
+        // J'ai laissé à 'false' pour que l'email parte vraiment, car tu as mis tes clés.
+        const SIMULATION_MODE = true; 
+        const EMAILJS_SERVICE_ID = "service_kqawbsm";
+        const EMAILJS_TEMPLATE_ID = "template_zxo8ckl";
+        const EMAILJS_PUBLIC_KEY = "2URpbIT-qRWSsc10k";
+
+
+        // --- CONFIGURATION CADEAUX ---
+        const DEFAULT_COUPONS = [
+            { id: 1, title: "Cadeau de la semaine sans réseaux", desc: "Tu l'auras quand tu veux. Même maintenant, si tu veux !", icon: "fa-utensils", used: false, date: null },
+            { id: 2, title: "Soirée Massage", desc: "30 minutes de massage. Avec huiles essentielles !", icon: "fa-spa", used: false, date: null },
+            { id: 3, title: "Plus de secrets !", desc: "Je suis obligé de dire quelque chose que je prévoyais de garder secret.", icon: "fa-user-secret", used: false, date: null },
+            { id: 4, title: "Sortie découverte", desc: "Je te prépare une sortie à un endroit que tu connais pas, sans que tu n'aies rien à faire.", icon: "fa-map-signs", used: false, date: null },
+            { id: 5, title: "Un caprice", desc: "Quelle diva.. Bon, ok. Je ferai ce que tu veux.", icon: "fa-crown", used: false, date: null },
+            { id: 6, title: "Des bonbons ? OUAIIIS", desc: "T'as le droit à deux paquets de bonbons, de ton choix. Tu peux les prendre à des moments différents.", icon: "fa-candy-cane", used: false, date: null },
+            { id: 7, title: "Soirée pyjama", desc: "Une soirée pyjama, où tu veux, quand tu veux.", icon: "fa-bed", used: false, date: null },
+            { id: 8, title: "Dîner aux chandelles", desc: "Je cuisine ce que tu veux, ou on mange où tu veux !", icon: "fa-gift", used: false, date: null }
+        ];
+
+        // Changement de version pour forcer la mise à jour de la liste
+        const STORAGE_KEY = 'carnet_bons_v5'; 
+        let currentCouponId = null;
+        let coupons = [];
+
+        // --- LOGIQUE ---
+
+        // Initialisation EmailJS sécurisée
+        if (!SIMULATION_MODE) {
+            try {
+                if(EMAILJS_PUBLIC_KEY) emailjs.init(EMAILJS_PUBLIC_KEY);
+            } catch (e) {
+                console.warn("EmailJS non configuré correctement.");
+            }
+        }
+
+        function loadCoupons() {
+            const saved = localStorage.getItem(STORAGE_KEY);
+            coupons = saved ? JSON.parse(saved) : DEFAULT_COUPONS;
+            renderList();
+        }
+
+        function saveCoupons() {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(coupons));
+            renderList();
+        }
+
+        function renderList() {
+            const container = document.getElementById('coupons-container');
+            container.innerHTML = ''; 
+
+            coupons.forEach(coupon => {
+                const div = document.createElement('div');
+                div.className = `coupon-card ${coupon.used ? 'used' : ''}`;
+                
+                let actionHtml = coupon.used 
+                    ? `<div style="color:#b2bec3;"><i class="fas fa-check-circle"></i></div>`
+                    : `<div class="coupon-action" onclick="openConfirmation(${coupon.id})"><i class="fas fa-chevron-right"></i></div>`;
+                
+                let statusHtml = coupon.used 
+                    ? `<div class="status-badge">Validé le ${coupon.date}</div>` 
+                    : '';
+
+                div.innerHTML = `
+                    <div class="coupon-icon"><i class="fas ${coupon.icon}"></i></div>
+                    <div class="coupon-details">
+                        <span class="coupon-title">${coupon.title}</span>
+                        <span class="coupon-desc">${coupon.desc}</span>
+                        ${statusHtml}
+                    </div>
+                    ${actionHtml}
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        window.openConfirmation = function(id) {
+            currentCouponId = id;
+            const coupon = coupons.find(c => c.id === id);
+            
+            const btnConfirm = document.getElementById('btn-confirm');
+            btnConfirm.innerHTML = "Valider !";
+            btnConfirm.disabled = false;
+            btnConfirm.style.backgroundColor = "";
+            document.getElementById('modal-title').innerText = "On valide ?";
+            document.getElementById('modal-text').innerHTML = `Tu veux utiliser le bon :<br><strong>${coupon.title}</strong> ?`;
+            document.getElementById('modal').classList.add('active');
+        }
+
+        async function redeemCoupon() {
+            if (currentCouponId === null) return;
+
+            const btnConfirm = document.getElementById('btn-confirm');
+            const coupon = coupons.find(c => c.id === currentCouponId);
+
+            btnConfirm.disabled = true;
+            btnConfirm.innerHTML = `<i class="fas fa-spinner"></i> Envoi...`;
+
+            try {
+                if (SIMULATION_MODE) {
+                    await new Promise(resolve => setTimeout(resolve, 1500));
+                } else {
+                    // Envoi réel
+                    await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
+                        to_name: "Sashy",
+                        gift_name: coupon.title,
+                        message: `Le bon "${coupon.title}" a été validé le ${new Date().toLocaleDateString()} !`
+                    });
+                }
+
+                const now = new Date();
+                const dateStr = now.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
+                
+                coupon.used = true;
+                coupon.date = dateStr;
+                saveCoupons();
+
+                btnConfirm.style.backgroundColor = "var(--success-color)";
+                btnConfirm.innerHTML = `<i class="fas fa-check"></i> Envoyé !`;
+                
+                setTimeout(() => {
+                    document.getElementById('modal').classList.remove('active');
+                }, 1000);
+
+            } catch (error) {
+                console.error("Erreur d'envoi", error);
+                alert("Erreur EmailJS : " + JSON.stringify(error));
+                btnConfirm.innerHTML = "Erreur...";
+                btnConfirm.disabled = false;
+            }
+        }
+
+        document.getElementById('btn-start').addEventListener('click', () => {
+            document.getElementById('intro-screen').classList.add('hidden');
+            document.getElementById('list-screen').classList.remove('hidden');
+            document.getElementById('list-screen').style.display = 'flex';
+        });
+
+        document.getElementById('btn-cancel').addEventListener('click', () => {
+            document.getElementById('modal').classList.remove('active');
+            currentCouponId = null;
+        });
+
+        document.getElementById('btn-confirm').addEventListener('click', redeemCoupon);
+        
+        const styleSheet = document.createElement("style");
+        styleSheet.innerText = `
+            @keyframes heartbeat {
+                0% { transform: scale(1); }
+                10% { transform: scale(1.1); }
+                20% { transform: scale(1); }
+                30% { transform: scale(1.1); }
+                40% { transform: scale(1); }
+                100% { transform: scale(1); }
+            }
+        `;
+        document.head.appendChild(styleSheet);
+
+        loadCoupons();
+    </script>
+</body>
+</html>
